@@ -22,7 +22,7 @@
 ---
 
 ## Usage
-1. Install dependencies (e.g., `python-chess`, `opencv-python`, `pyautogui`, `pyperclip`).
+1. Install dependencies.
    ```bash
    pip install -r requirements.txt
 3. Run:
