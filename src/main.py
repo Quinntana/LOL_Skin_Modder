@@ -1,6 +1,7 @@
 import os
 import time
 import shutil
+import subprocess
 from config import PROJECT_ROOT, DOWNLOAD_DIR, INSTALL_DIR, LOG_DIR, DATA_DIR
 from logger import setup_logger
 from champions import get_current_champion, get_champion_names
@@ -52,7 +53,8 @@ def main_menu():
     print("1. Install skins for current champion")
     print("2. Install skins for all champions")
     print("3. Factory reset")
-    print("4. Exit")
+    print("4. Open CSLOL Manager")
+    print("5. Exit")
 
     while True:
         choice = input("\nSelect option: ").strip()
@@ -89,11 +91,25 @@ def main_menu():
             return
 
         elif choice == "4":
+            try:
+                # Path to CSLOL Manager executable
+                cslol_path = os.path.join(INSTALL_DIR, "cslol-manager.exe")
+
+                if os.path.exists(cslol_path):
+                    print(f"Launching CSLOL Manager from {cslol_path}")
+                    subprocess.Popen([cslol_path], shell=True)
+                else:
+                    print("CSLOL Manager not found. Please install it first.")
+            except Exception as e:
+                logger.error(f"Failed to launch CSLOL Manager: {e}")
+                print(f"Error launching CSLOL Manager: {e}")
+
+        elif choice == "5":
             return
 
         else:
             print("Invalid option")
-
+            
 if __name__ == "__main__":
     try:
         # Initial setup
