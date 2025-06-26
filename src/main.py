@@ -18,7 +18,7 @@ def verify_paths():
         os.makedirs(directory, exist_ok=True)
         logger.info(f"Verified directory: {directory}")
 
-def process_champion(champion):
+def process_champion(champion, skip_chromas=False):
     """Full processing pipeline for a champion"""
     logger.info(f"Processing {champion}")
 
@@ -26,7 +26,7 @@ def process_champion(champion):
         logger.error("Failed to download skins repository")
         return 0
 
-    installed = install_skins(champion)
+    installed = install_skins(champion, skip_chromas)
     logger.info(f"Installed {installed} skins for {champion}")
     return installed
 
@@ -35,7 +35,6 @@ def factory_reset():
     logger.info("Performing factory reset")
 
     try:
-        # Clear downloaded skins repository
         if os.path.exists(DATA_DIR):
             shutil.rmtree(DATA_DIR)
             os.makedirs(DOWNLOAD_DIR)
@@ -49,8 +48,8 @@ def factory_reset():
 
 def main_menu():
     """Command-line interface"""
-    print("\nLeague Skin Manager")
-    print("1. Install skins for current champion")
+    print("\nLeague Skin Manager VN")
+    print("1. Install skins for a single champion (with chromas)")
     print("2. Install skins for all champions")
     print("3. Factory reset")
     print("4. Open CSLOL Manager")
@@ -66,11 +65,20 @@ def main_menu():
                 champion = input("Champion name: ").strip()
 
             if champion:
-                process_champion(champion)
+                process_champion(champion, skip_chromas=False)
             else:
                 print("Invalid champion name")
 
         elif choice == "2":
+            print("\nWARNING: Installing chromas for all champions may cause CSLOL Manager to become slow/laggy.")
+            print("If CSLOL Manager becomes unresponsive, perform a Factory Reset (option 3).")
+
+            install_chromas = ""
+            while install_chromas.lower() not in ["y", "n"]:
+                install_chromas = input("Include chromas? (y/n): ").strip()
+
+            skip_chromas = (install_chromas.lower() == "n")
+
             champions = get_champion_names()
             if not champions:
                 print("Failed to get champion list")
@@ -81,18 +89,20 @@ def main_menu():
 
             for i, champ in enumerate(champions, 1):
                 print(f"\nProcessing {i}/{len(champions)}: {champ}")
-                process_champion(champ)
+                process_champion(champ, skip_chromas=skip_chromas)
 
             print(f"\nCompleted in {time.time()-start:.1f} seconds")
 
         elif choice == "3":
-            factory_reset()
-            print("Reset complete")
-            return
+            if factory_reset():
+                print("Reset complete")
+                return
+            else:
+                print("Reset failed - see logs for details")
+                return
 
         elif choice == "4":
             try:
-                # Path to CSLOL Manager executable
                 cslol_path = os.path.join(INSTALL_DIR, "cslol-manager.exe")
 
                 if os.path.exists(cslol_path):
@@ -109,17 +119,18 @@ def main_menu():
 
         else:
             print("Invalid option")
-            
+
 if __name__ == "__main__":
     try:
-        # Initial setup
         verify_paths()
         os.chdir(PROJECT_ROOT)
         print("Checking for updates...")
-        if check_and_update():
-            print("Updated successfully")
+        update_result = check_and_update()
+        if update_result['manager_updated']:
+            print("CSLOL Manager updated successfully")
+        if update_result['lol_version_changed']:
+            print("New LoL version detected - skins have been reset")
 
-        # Start application
         main_menu()
     except KeyboardInterrupt:
         print("\nOperation cancelled")
