@@ -22,11 +22,13 @@
 ---
 
 ## Usage
+Download and run the exe or if you want to run it yourself, follow the step below:
 1. Install dependencies.
    ```bash
    pip install -r requirements.txt
 3. Run:
    ```bash
+   cd src
    python main.py
 
 ## Showcase
