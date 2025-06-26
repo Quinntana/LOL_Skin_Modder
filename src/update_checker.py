@@ -62,7 +62,6 @@ def download_asset(asset_url, temp_dir):
 def install_update(temp_file, new_version):
     """Install update from downloaded file and record version"""
     try:
-        # Clear existing files (except 'installed')
         for item in os.listdir(INSTALL_DIR):
             if item != "installed":
                 path = os.path.join(INSTALL_DIR, item)
@@ -71,11 +70,9 @@ def install_update(temp_file, new_version):
                 else:
                     os.remove(path)
 
-        # Extract update
         with zipfile.ZipFile(temp_file, "r") as zip_ref:
             zip_ref.extractall(DATA_DIR)
 
-        # Update version file
         with open(VERSION_FILE, "w") as f:
             f.write(new_version)
 
@@ -128,7 +125,6 @@ def check_and_update():
         logger.info(f"LoL version changed: {current_lol} -> {latest_lol}")
         print(f"New LoL version detected: {latest_lol}. Resetting skins...")
 
-        # Reset download and installed dirs
         shutil.rmtree(DOWNLOAD_DIR, ignore_errors=True)
         os.makedirs(DOWNLOAD_DIR, exist_ok=True)
         installed_dir = os.path.join(INSTALL_DIR, "installed")
