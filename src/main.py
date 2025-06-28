@@ -2,12 +2,16 @@ import os
 import time
 import shutil
 import subprocess
+import ctypes
+from ctypes import wintypes
 from config import PROJECT_ROOT, DOWNLOAD_DIR, INSTALL_DIR, LOG_DIR, DATA_DIR
 from logger import setup_logger
 from champions import get_current_champion, get_champion_names
 from skin_downloader import download_repo
 from skin_installer import install_skins
 from update_checker import check_and_update
+
+APP_MUTEX_NAME = "{LeagueSkinManagerVN}"
 
 logger = setup_logger(__name__)
 
@@ -17,6 +21,30 @@ def verify_paths():
     for directory in required_dirs:
         os.makedirs(directory, exist_ok=True)
         logger.info(f"Verified directory: {directory}")
+
+def ensure_single_instance():
+    """Ensure only one instance of the application runs at a time"""
+    logger.info("Checking for existing application instance...")
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    CreateMutexW = kernel32.CreateMutexW
+    CreateMutexW.argtypes = [wintypes.LPVOID, wintypes.BOOL, wintypes.LPCWSTR]
+    CreateMutexW.restype = wintypes.HANDLE
+
+    mutex = CreateMutexW(None, False, APP_MUTEX_NAME)
+    if not mutex:
+        error_code = ctypes.get_last_error()
+        logger.error(f"Failed to create mutex. Error code: {error_code}")
+        return False
+
+    last_error = ctypes.get_last_error()
+    if last_error == 0x000000B7:
+        logger.warning("Another instance of the application is already running.")
+        return False
+
+    logger.info("No other instance detected. Continuing.")
+    return True
+
 
 def process_champion(champion, skip_chromas=False):
     """Full processing pipeline for a champion"""
@@ -106,7 +134,7 @@ def main_menu():
                 cslol_path = os.path.join(INSTALL_DIR, "cslol-manager.exe")
 
                 if os.path.exists(cslol_path):
-                    print(f"Launching CSLOL Manager from {cslol_path}")
+                    print(f"Launching CSLOL Manager")
                     subprocess.Popen([cslol_path], shell=True)
                 else:
                     print("CSLOL Manager not found. Please install it first.")
@@ -122,14 +150,18 @@ def main_menu():
 
 if __name__ == "__main__":
     try:
+        if not ensure_single_instance():
+            print("Cannot run multiple instances")
+            exit(1)
+
         verify_paths()
         os.chdir(PROJECT_ROOT)
         print("Checking for updates...")
         update_result = check_and_update()
+        if update_result['lol_version_changed']:
+            print("Skins have been reset")
         if update_result['manager_updated']:
             print("CSLOL Manager updated successfully")
-        if update_result['lol_version_changed']:
-            print("New LoL version detected - skins have been reset")
 
         main_menu()
     except KeyboardInterrupt:
