@@ -92,7 +92,6 @@ def check_and_update():
     """
     results = {'manager_updated': False, 'lol_version_changed': False}
 
-    # --- Manager update check ---
     current_mgr = get_installed_version()
     latest_mgr = get_latest_manager_version()
 
@@ -102,7 +101,7 @@ def check_and_update():
             release_data = requests.get(GITHUB_RELEASES_URL, timeout=10).json()
             asset_url = next(
                 (a["browser_download_url"] for a in release_data.get("assets", [])
-                 if "windows" in a["name"].lower() and a["name"].endswith(".zip")),
+                if a["name"].endswith(".zip")),
                 None
             )
             if asset_url:
@@ -111,10 +110,13 @@ def check_and_update():
                     if tmp_file and install_update(tmp_file, latest_mgr):
                         logger.info("Manager updated successfully")
                         results['manager_updated'] = True
+            else:
+                assets = release_data.json().get("assets", [])
+                logger.warning(f"No .zip asset found in latest release ({latest_mgr}). "
+                f"Available assets: {[a['name'] for a in assets]}")
         except Exception as e:
             logger.error(f"Manager update process failed: {e}")
 
-    # --- LoL version check ---
     current_lol = None
     if os.path.exists(LOL_VERSION_FILE):
         with open(LOL_VERSION_FILE, 'r') as f:
