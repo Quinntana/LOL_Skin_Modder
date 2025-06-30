@@ -1,7 +1,7 @@
 import os
 import io
 import zipfile
-from config import INSTALL_DIR, DOWNLOAD_DIR, REPO_ZIP_PATH
+from config import INSTALL_DIR, DOWNLOAD_DIR, REPO_ZIP_PATH, INSTALLED_DIR
 from logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -26,7 +26,7 @@ def install_skins(champion, skip_chromas=False):
 
             for skin_path in skin_files:
                 skin_name = os.path.splitext(os.path.basename(skin_path))[0]
-                install_path = os.path.join(INSTALL_DIR, "installed", skin_name)
+                install_path = os.path.join(INSTALLED_DIR, skin_name)
 
                 os.makedirs(install_path, exist_ok=True)
 

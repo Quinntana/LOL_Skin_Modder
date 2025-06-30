@@ -9,6 +9,8 @@ else:
 DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 DOWNLOAD_DIR = os.path.join(DATA_DIR, "skins")
 INSTALL_DIR = os.path.join(DATA_DIR, "cslol-manager")
+INSTALLED_DIR = os.path.join(PROJECT_ROOT, "data", "cslol-manager", "installed")
+PROFILE_FILE = os.path.join(INSTALLED_DIR, "default_profile.txt")
 LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
 LOL_VERSION_FILE = os.path.join(DATA_DIR, "lol_version.txt")
 VERSION_FILE = os.path.join(INSTALL_DIR, "version.txt")

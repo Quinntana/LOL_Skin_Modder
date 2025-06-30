@@ -81,7 +81,8 @@ def main_menu():
     print("2. Install skins for all champions")
     print("3. Factory reset")
     print("4. Open CSLOL Manager")
-    print("5. Exit")
+    print("5. Manage Mods")
+    print("6. Exit")
 
     while True:
         choice = input("\nSelect option: ").strip()
@@ -143,6 +144,10 @@ def main_menu():
                 print(f"Error launching CSLOL Manager: {e}")
 
         elif choice == "5":
+            from mod_manager import main as mod_manager_main
+            mod_manager_main()
+
+        elif choice == "6":
             return
 
         else:
